@@ -4,6 +4,7 @@
   "description": "Scripts to work with Mapillary API",
   "main": "download.js",
   "scripts": {
+    "download": "node download.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -11,5 +12,14 @@
   "dependencies": {
     "axios": "^0.21.1",
     "parse-link-header": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.25.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "prettier": "^2.2.1"
   }
 }

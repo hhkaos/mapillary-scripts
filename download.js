@@ -1,50 +1,54 @@
-const parse = require('parse-link-header');
-const config = require('./config.json');
-const axios = require('axios');
+'use strict'
+
+const parse = require('parse-link-header')
+const config = require('./config.json')
+const axios = require('axios')
 const fs = require('fs')
 
-let output = {"type":"FeatureCollection","features":[]}
-let page_counter = 1;
+const output = { type: 'FeatureCollection', features: [] }
 
-const write_response = function(){
-    fs.writeFile(`downloads/images_downloaded_${Date.now()}.json`, JSON.stringify(output, null, 2), err => {
-        if (err) {
-            console.error(err)
-            return
-        }
-        console.log(`Download finished: ${output.features.length} photos`);
-    });
+let pageCounter = 1
+
+const writeResponse = function () {
+  const outputFilename =`downloads/images_downloaded_${Date.now()}.json`
+  fs.writeFile(outputFilename, JSON.stringify(output, null, 2), err => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    console.log(`Download finished: ${output.features.length} photos`)
+  })
 }
 
-const load_page = function(url){
+const loadPage = function (url) {
+  axios.get(url)
+  .then(function (response) {
+    output.features = output.features.concat(response.data.features)
+    console.log(`Page ${pageCounter} received`)
+    pageCounter++
 
-    axios.get(url)
-        .then(function (response) {
-            output.features = output.features.concat(response.data.features);
-            console.log(`Page ${page_counter} received`);
-            page_counter++;
-            if(response.headers.link || output.features === 400){
-                const parsed = parse(response.headers.link);
-                if(parsed.next){
-                    load_page(parsed.next.url);
-                }else{
-                    write_response();
-                }
-            }else{
-                console.log('No link header or more than 400 results')
-            }
-        })
-        .catch(function (error) {
-            console.log(error);
-        });
-};
 
+    if (response.headers.link) {
+      const parsed = parse(response.headers.link)
+      if (parsed.next) {
+        loadPage(parsed.next.url)
+      } else {
+        writeResponse()
+      }
+    } else {
+      console.log('No link header')
+    }
+  })
+  .catch(function (error) {
+    console.log(error)
+  })
+}
 
 const u = new URLSearchParams({
-    client_id:config.client_id,
-    bbox: "-2.4801851246529174,36.83570027690869,-2.424809739804093,36.8623692390420",
-    // pano: true
-}).toString();
+  client_id: config.client_id,
+  // bbox: "-2.480185,36.835700,-2.424809,36.862369",
+  bbox: '-2.487948,36.814208,-2.405207,36.87273',
+  pano: true
+}).toString()
 
-load_page(`https://a.mapillary.com/v3/images?${u}`);
-
+loadPage(`https://a.mapillary.com/v3/images?${u}`)
